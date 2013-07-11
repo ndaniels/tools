@@ -1,22 +1,21 @@
-This package provides simplified wrappers around computational biology tools
-that are typically operated from the command line.
+This package provides a litany of command line programs that provide access
+to the various libraries that exist in the TuftsBCB organization.
 
-This package provides types and functions for common operations on protein
-structures. Currently, the central contribution of this package is to
-efficiently compute the RMSD between sets of points using a port of
-Theobald and Liu's quarternion-based characteristic polynomial rotation
-calculation method.
+In most cases, command line tools are typically very small and only
+representative of an interface to interact with an existing library. In more
+exceptional circumstances where performance is needed, a command line tool
+may use concurrency in an attempt to decrease execution time.
 
-## Documentation
+## Documentation for each command
 
-http://godoc.org/github.com/TuftsBCB/structure
+http://godoc.org/github.com/TuftsBCB/tools
 
 
 ## Installation
 
 Once you have [Go installed](http://golang.org/doc/install), just run
 
-    go get github.com/TuftsBCB/structure
+    go get github.com/TuftsBCB/tools/...
 
 to install the package.
 
