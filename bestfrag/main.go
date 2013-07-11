@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/BurntSushi/bcbgo/cmd/util"
 	"github.com/BurntSushi/bcbgo/fragbag"
 	"github.com/TuftsBCB/io/pdb"
 	"github.com/TuftsBCB/structure"
+	"github.com/TuftsBCB/tools/util"
 )
 
 var lib *fragbag.StructureLibrary

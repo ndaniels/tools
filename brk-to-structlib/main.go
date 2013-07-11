@@ -7,10 +7,10 @@ import (
 	"io/ioutil"
 	"path"
 
-	"github.com/BurntSushi/bcbgo/cmd/util"
 	"github.com/BurntSushi/bcbgo/fragbag"
 	"github.com/TuftsBCB/io/pdb"
 	"github.com/TuftsBCB/structure"
+	"github.com/TuftsBCB/tools/util"
 )
 
 var flagOverwrite = false

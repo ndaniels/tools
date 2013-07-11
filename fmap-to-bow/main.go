@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/BurntSushi/bcbgo/bow"
-	"github.com/BurntSushi/bcbgo/cmd/util"
+	"github.com/TuftsBCB/tools/util"
 )
 
 func init() {

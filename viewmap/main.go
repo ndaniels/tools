@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/BurntSushi/bcbgo/cmd/util"
+	"github.com/TuftsBCB/tools/util"
 )
 
 func init() {

@@ -4,9 +4,9 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/BurntSushi/bcbgo/cmd/util"
 	"github.com/TuftsBCB/io/pdb"
 	"github.com/TuftsBCB/seq"
+	"github.com/TuftsBCB/tools/util"
 )
 
 var flagChain = ""

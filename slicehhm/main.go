@@ -3,8 +3,8 @@ package main
 import (
 	"os"
 
-	"github.com/BurntSushi/bcbgo/cmd/util"
 	"github.com/TuftsBCB/io/hhm"
+	"github.com/TuftsBCB/tools/util"
 )
 
 func init() {

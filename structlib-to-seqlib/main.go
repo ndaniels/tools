@@ -8,11 +8,11 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/BurntSushi/bcbgo/cmd/util"
 	"github.com/BurntSushi/bcbgo/fragbag"
 	"github.com/TuftsBCB/io/pdb"
 	"github.com/TuftsBCB/io/pdb/slct"
 	"github.com/TuftsBCB/seq"
+	"github.com/TuftsBCB/tools/util"
 )
 
 var (

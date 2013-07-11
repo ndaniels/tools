@@ -11,8 +11,8 @@ import (
 	"path"
 	"strings"
 
-	"github.com/BurntSushi/bcbgo/cmd/util"
 	"github.com/TuftsBCB/io/pdb"
+	"github.com/TuftsBCB/tools/util"
 )
 
 var (

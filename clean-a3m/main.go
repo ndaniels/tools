@@ -7,8 +7,8 @@
 package main
 
 import (
-	"github.com/BurntSushi/bcbgo/cmd/util"
 	"github.com/TuftsBCB/io/fasta"
+	"github.com/TuftsBCB/tools/util"
 )
 
 func init() {

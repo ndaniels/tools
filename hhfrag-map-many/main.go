@@ -7,7 +7,7 @@ import (
 	"runtime"
 	"sync"
 
-	"github.com/BurntSushi/bcbgo/cmd/util"
+	"github.com/TuftsBCB/tools/util"
 )
 
 func init() {

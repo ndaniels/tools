@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/BurntSushi/bcbgo/cmd/util"
+	"github.com/TuftsBCB/tools/util"
 )
 
 func init() {

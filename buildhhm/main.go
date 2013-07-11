@@ -5,9 +5,9 @@ package main
 import (
 	"flag"
 
-	"github.com/BurntSushi/bcbgo/cmd/util"
 	"github.com/TuftsBCB/apps/hhsuite"
 	"github.com/TuftsBCB/io/hhm"
+	"github.com/TuftsBCB/tools/util"
 )
 
 var (
