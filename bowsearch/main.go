@@ -10,7 +10,7 @@ import (
 	"sync"
 	"text/tabwriter"
 
-	"github.com/BurntSushi/bcbgo/bow"
+	"github.com/TuftsBCB/frags/bow"
 	"github.com/TuftsBCB/tools/util"
 )
 

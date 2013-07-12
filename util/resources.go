@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/BurntSushi/bcbgo/bow"
-	"github.com/BurntSushi/bcbgo/fragbag"
+	"github.com/TuftsBCB/frags/bow"
+	"github.com/TuftsBCB/frags/fragbag"
 	"github.com/TuftsBCB/hhfrag"
 	"github.com/TuftsBCB/io/pdb"
 )
