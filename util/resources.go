@@ -15,6 +15,12 @@ import (
 	"github.com/TuftsBCB/io/pdb"
 )
 
+func Library(path string) fragbag.Library {
+	lib, err := fragbag.Open(OpenFile(path))
+	Assert(err, "Could not open fragment library '%s'", path)
+	return lib
+}
+
 func StructureLibrary(path string) *fragbag.StructureLibrary {
 	lib, err := fragbag.OpenStructureLibrary(OpenFile(path))
 	Assert(err, "Could not open structural fragment library '%s'", path)
