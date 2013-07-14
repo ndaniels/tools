@@ -65,7 +65,7 @@ func main() {
 	var freqProfiles []*seq.FrequencyProfile
 	var fpChans []chan seq.Sequence
 	for i := 0; i < structLib.Size(); i++ {
-		fp := seq.NewFrequencyProfile(structLib.FragmentSize)
+		fp := seq.NewFrequencyProfile(structLib.FragmentSize())
 		freqProfiles = append(freqProfiles, fp)
 
 		fpChan := make(chan seq.Sequence)
@@ -132,18 +132,19 @@ func structureToSequence(
 	fpChans []chan seq.Sequence,
 ) {
 	sequence := chain.AsSequence()
+	fragSize := structLib.FragmentSize()
 
 	// If the chain is shorter than the fragment size, we can do nothing
 	// with it.
-	if sequence.Len() < structLib.FragmentSize {
+	if sequence.Len() < fragSize {
 		util.Verbosef("Sequence '%s' is too short (length: %d)",
 			sequence.Name, sequence.Len())
 		return
 	}
 
-	limit := sequence.Len() - structLib.FragmentSize
+	limit := sequence.Len() - fragSize
 	for start := 0; start <= limit; start++ {
-		end := start + structLib.FragmentSize
+		end := start + fragSize
 		atoms := chain.SequenceCaAtomSlice(start, end)
 		if atoms == nil {
 			// Nothing contiguous was found (a "disordered" residue perhaps).

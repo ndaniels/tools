@@ -45,11 +45,11 @@ func main() {
 
 			s, e := util.Arg(3), util.Arg(4)
 			sn, en := util.ParseInt(s)-1, util.ParseInt(e)
-			if en-sn < lib.FragmentSize {
+			if en-sn < lib.FragmentSize() {
 				util.Fatalf("The range [%s, %s] specifies %d alpha-carbon "+
 					"atoms while at least %d alpha-carbon atoms are required "+
 					"for the given fragment library.",
-					s, e, en-sn, lib.FragmentSize)
+					s, e, en-sn, lib.FragmentSize())
 			}
 			bestFragsForRegion(chain, atoms, sn, en)
 		}
@@ -57,7 +57,7 @@ func main() {
 }
 
 func bestFragsForRegion(chain *pdb.Chain, atoms []structure.Coords, s, e int) {
-	fsize := lib.FragmentSize
+	fsize := lib.FragmentSize()
 	for i := s; i <= e-fsize; i++ {
 		best := lib.Best(atoms[i : i+fsize])
 		fmt.Println(chain.Entry.IdCode, string(chain.Ident), i+1, i+fsize, best)
