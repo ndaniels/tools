@@ -55,8 +55,8 @@ func main() {
 	fileChan := make(chan string)
 	wg := new(sync.WaitGroup)
 	for i := 0; i < max(1, runtime.GOMAXPROCS(0)); i++ {
+		wg.Add(1)
 		go func() {
-			wg.Add(1)
 			for file := range fileChan {
 				addToDB(db, file, progress)
 			}
