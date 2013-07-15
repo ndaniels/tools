@@ -35,7 +35,7 @@ func main() {
 		util.Fatalf("Could not find chain with identifier '%c'.", chain[0])
 	}
 
-	bow := bow.StructureBOW(structLib, thechain)
+	bow := bow.PDBChainStructure{thechain}.BagOfWords(structLib)
 	if bowOut == "--" {
 		fmt.Println(bow)
 	} else {
