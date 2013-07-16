@@ -11,6 +11,7 @@ import (
 	"text/tabwriter"
 
 	"github.com/TuftsBCB/fragbag/bow"
+	"github.com/TuftsBCB/fragbag/bowdb"
 	"github.com/TuftsBCB/tools/util"
 )
 
@@ -18,7 +19,7 @@ var (
 	flagOutput = "plain"
 	flagChain  = ""
 
-	searchOpts = bow.SearchDefault
+	searchOpts = bowdb.SearchDefault
 )
 
 func init() {
@@ -58,13 +59,13 @@ func init() {
 
 	// Convert command line flag values to search option values.
 	if flagDesc {
-		searchOpts.Order = bow.OrderDesc
+		searchOpts.Order = bowdb.OrderDesc
 	}
 	switch flagSort {
 	case "cosine":
-		searchOpts.SortBy = bow.Cosine
+		searchOpts.SortBy = bowdb.Cosine
 	case "euclid":
-		searchOpts.SortBy = bow.Euclid
+		searchOpts.SortBy = bowdb.Euclid
 	default:
 		util.Fatalf("Unknown sort field '%s'.", flagSort)
 	}
@@ -77,9 +78,7 @@ func main() {
 		defer pprof.StopCPUProfile()
 	}
 
-	db, err := bow.OpenDB(util.Arg(0))
-	util.Assert(err)
-
+	db := util.OpenBOWDB(util.Arg(0))
 	out, outDone := outputter()
 	bowerChan := make(chan bow.Bower)
 	wg := new(sync.WaitGroup)
@@ -122,7 +121,7 @@ func main() {
 
 type searchResult struct {
 	query   bow.Bower
-	results []bow.SearchResult
+	results []bowdb.SearchResult
 }
 
 func outputter() (chan searchResult, chan struct{}) {

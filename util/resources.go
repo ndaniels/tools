@@ -11,6 +11,7 @@ import (
 
 	"github.com/TuftsBCB/fragbag"
 	"github.com/TuftsBCB/fragbag/bow"
+	"github.com/TuftsBCB/fragbag/bowdb"
 	"github.com/TuftsBCB/hhfrag"
 	"github.com/TuftsBCB/io/pdb"
 )
@@ -33,8 +34,8 @@ func SequenceLibrary(path string) *fragbag.SequenceLibrary {
 	return lib
 }
 
-func OpenBOWDB(path string) *bow.DB {
-	db, err := bow.OpenDB(path)
+func OpenBOWDB(path string) *bowdb.DB {
+	db, err := bowdb.OpenDB(path)
 	Assert(err, "Could not open BOW database '%s'", path)
 	return db
 }

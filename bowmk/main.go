@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	"github.com/TuftsBCB/fragbag/bow"
+	"github.com/TuftsBCB/fragbag/bowdb"
 	"github.com/TuftsBCB/io/pdb"
 	"github.com/TuftsBCB/tools/util"
 )
@@ -40,7 +41,7 @@ func main() {
 			"Could not remove '%s' directory", dbPath)
 	}
 
-	db, err := bow.CreateDB(util.StructureLibrary(libPath), dbPath)
+	db, err := bowdb.CreateDB(util.StructureLibrary(libPath), dbPath)
 	util.Assert(err)
 
 	if len(util.FlagCpuProf) > 0 {
@@ -74,7 +75,7 @@ func main() {
 	util.Assert(db.Close())
 }
 
-func addToDB(db *bow.DB, file string, progress util.Progress) {
+func addToDB(db *bowdb.DB, file string, progress util.Progress) {
 	if util.IsFasta(file) || util.IsFmap(file) {
 		fmap := util.GetFmap(file)
 		db.Add(fmap)
