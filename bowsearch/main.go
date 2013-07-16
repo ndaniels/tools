@@ -10,7 +10,7 @@ import (
 	"sync"
 	"text/tabwriter"
 
-	"github.com/TuftsBCB/frags/bow"
+	"github.com/TuftsBCB/fragbag/bow"
 	"github.com/TuftsBCB/tools/util"
 )
 
@@ -81,11 +81,11 @@ func main() {
 	util.Assert(err)
 
 	out, outDone := outputter()
-	bowerChan := make(chan bow.StructureBower)
+	bowerChan := make(chan bow.Bower)
 	wg := new(sync.WaitGroup)
 	for i := 0; i < max(1, runtime.GOMAXPROCS(0)); i++ {
+		wg.Add(1)
 		go func() {
-			wg.Add(1)
 			for bower := range bowerChan {
 				out <- searchResult{bower, db.Search(searchOpts, bower)}
 			}
@@ -104,7 +104,7 @@ func main() {
 					if len(flagChain) == 0 ||
 						strings.Contains(flagChain, string(chain.Ident)) {
 
-						bowerChan <- chain
+						bowerChan <- bow.PDBChainStructure{chain}
 					}
 				}
 			}
@@ -121,7 +121,7 @@ func main() {
 }
 
 type searchResult struct {
-	query   bow.StructureBower
+	query   bow.Bower
 	results []bow.SearchResult
 }
 

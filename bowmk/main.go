@@ -8,7 +8,7 @@ import (
 	"runtime/pprof"
 	"sync"
 
-	"github.com/TuftsBCB/frags/bow"
+	"github.com/TuftsBCB/fragbag/bow"
 	"github.com/TuftsBCB/io/pdb"
 	"github.com/TuftsBCB/tools/util"
 )
@@ -88,7 +88,7 @@ func addToDB(db *bow.DB, file string, progress util.Progress) {
 		}
 		for _, chain := range entry.Chains {
 			if chain.IsProtein() {
-				db.Add(chain)
+				db.Add(bow.PDBChainStructure{chain})
 			}
 		}
 		progress.JobDone(nil)

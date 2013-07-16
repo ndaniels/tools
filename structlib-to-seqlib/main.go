@@ -8,7 +8,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/TuftsBCB/frags/fragbag"
+	"github.com/TuftsBCB/fragbag"
 	"github.com/TuftsBCB/io/pdb"
 	"github.com/TuftsBCB/io/pdb/slct"
 	"github.com/TuftsBCB/seq"

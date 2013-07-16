@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	"github.com/TuftsBCB/frags/bow"
-	"github.com/TuftsBCB/frags/fragbag"
+	"github.com/TuftsBCB/fragbag"
+	"github.com/TuftsBCB/fragbag/bow"
 	"github.com/TuftsBCB/tools/util"
 )
 
@@ -35,7 +35,7 @@ func main() {
 		util.Fatalf("Could not find chain with identifier '%c'.", chain[0])
 	}
 
-	bow := bow.PDBChainStructure{thechain}.BagOfWords(structLib)
+	bow := bow.PDBChainStructure{thechain}.StructureBOW(structLib)
 	if bowOut == "--" {
 		fmt.Println(bow)
 	} else {

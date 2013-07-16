@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/TuftsBCB/frags/fragbag"
+	"github.com/TuftsBCB/fragbag"
 	"github.com/TuftsBCB/io/pdb"
 	"github.com/TuftsBCB/structure"
 	"github.com/TuftsBCB/tools/util"
