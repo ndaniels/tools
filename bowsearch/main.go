@@ -79,6 +79,9 @@ func main() {
 	}
 
 	db := util.OpenBOWDB(util.Arg(0))
+	_, err := db.ReadAll()
+	util.Assert(err, "Could not read BOW database entries")
+
 	out, outDone := outputter()
 	bowerChan := make(chan bow.Bower)
 	wg := new(sync.WaitGroup)
