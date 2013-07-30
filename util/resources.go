@@ -13,7 +13,9 @@ import (
 	"github.com/TuftsBCB/fragbag/bow"
 	"github.com/TuftsBCB/fragbag/bowdb"
 	"github.com/TuftsBCB/hhfrag"
+	"github.com/TuftsBCB/io/msa"
 	"github.com/TuftsBCB/io/pdb"
+	"github.com/TuftsBCB/seq"
 )
 
 func Library(path string) fragbag.Library {
@@ -32,6 +34,17 @@ func SequenceLibrary(path string) *fragbag.SequenceLibrary {
 	lib, err := fragbag.OpenSequenceLibrary(OpenFile(path))
 	Assert(err, "Could not open sequence fragment library '%s'", path)
 	return lib
+}
+
+func MSA(path string) seq.MSA {
+	if strings.HasSuffix(path, "a2m") || strings.HasSuffix(path, "a3m") {
+		aligned, err := msa.Read(OpenFile(path))
+		Assert(err, "Could not read MSA (a2m/a3m) from '%s'", path)
+		return aligned
+	}
+	aligned, err := msa.ReadFasta(OpenFile(path))
+	Assert(err, "Could not read MSA (fasta) from '%s'", path)
+	return aligned
 }
 
 func OpenBOWDB(path string) *bowdb.DB {
