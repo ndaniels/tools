@@ -25,14 +25,18 @@ func Library(path string) fragbag.Library {
 }
 
 func StructureLibrary(path string) *fragbag.StructureLibrary {
-	lib, err := fragbag.OpenStructureLibrary(OpenFile(path))
-	Assert(err, "Could not open structural fragment library '%s'", path)
+	lib, ok := Library(path).(*fragbag.StructureLibrary)
+	if !ok {
+		Fatalf("%s (%T) is not a structure library.", path, lib)
+	}
 	return lib
 }
 
 func SequenceLibrary(path string) *fragbag.SequenceLibrary {
-	lib, err := fragbag.OpenSequenceLibrary(OpenFile(path))
-	Assert(err, "Could not open sequence fragment library '%s'", path)
+	lib, ok := Library(path).(*fragbag.SequenceLibrary)
+	if !ok {
+		Fatalf("%s (%T) is not a sequence library.", path, lib)
+	}
 	return lib
 }
 
