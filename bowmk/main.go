@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"runtime"
 	"runtime/pprof"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/TuftsBCB/fragbag/bow"
 	"github.com/TuftsBCB/fragbag/bowdb"
+	"github.com/TuftsBCB/io/fasta"
 	"github.com/TuftsBCB/io/pdb"
 	"github.com/TuftsBCB/tools/util"
 )
@@ -22,8 +24,7 @@ func init() {
 	flag.BoolVar(&flagOverwrite, "overwrite", flagOverwrite,
 		"When set, any existing database will be completely overwritten.")
 
-	util.FlagUse("cpu", "cpuprof", "verbose", "seq-db", "pdb-hhm-db", "blits",
-		"hhfrag-min", "hhfrag-max", "hhfrag-inc")
+	util.FlagUse("cpu", "cpuprof", "verbose")
 	util.FlagParse(
 		"bowdb-path frag-lib-path "+
 			"(protein-dir | (protein-file [protein-file ...]))",
@@ -41,7 +42,7 @@ func main() {
 			"Could not remove '%s' directory", dbPath)
 	}
 
-	db, err := bowdb.CreateDB(util.StructureLibrary(libPath), dbPath)
+	db, err := bowdb.CreateDB(util.Library(libPath), dbPath)
 	util.Assert(err)
 
 	if len(util.FlagCpuProf) > 0 {
@@ -51,7 +52,7 @@ func main() {
 	}
 
 	files := util.AllFilesFromArgs(fileArgs)
-	progress := util.NewProgress(len(files))
+	progress := util.NewProgress(numJobs(files))
 
 	fileChan := make(chan string)
 	wg := new(sync.WaitGroup)
@@ -76,11 +77,32 @@ func main() {
 }
 
 func addToDB(db *bowdb.DB, file string, progress util.Progress) {
-	if util.IsFasta(file) || util.IsFmap(file) {
-		fmap := util.GetFmap(file)
-		db.Add(fmap)
-		progress.JobDone(nil)
-	} else if util.IsPDB(file) {
+	switch {
+	case util.IsFasta(file):
+		fp, err := os.Open(file)
+		if err != nil {
+			// This is a really weird error and will cause the progress
+			// meter to be off. But if we're here, it means we were able
+			// to read the file at startup but not now.
+			progress.JobDone(fmt.Errorf(
+				"Error opening FASTA file '%s': %s", file, err))
+			return
+		}
+		freader := fasta.NewReader(fp)
+		for {
+			s, err := freader.Read()
+			if err != nil {
+				if err == io.EOF {
+					break
+				}
+				progress.JobDone(fmt.Errorf(
+					"Error reading FASTA file '%s': %s", file, err))
+				continue
+			}
+			db.Add(bow.Sequence{s})
+			progress.JobDone(nil)
+		}
+	case util.IsPDB(file):
 		entry, err := pdb.ReadPDB(file)
 		if err != nil {
 			progress.JobDone(fmt.Errorf(
@@ -93,9 +115,26 @@ func addToDB(db *bowdb.DB, file string, progress util.Progress) {
 			}
 		}
 		progress.JobDone(nil)
-	} else {
+	default:
 		progress.JobDone(fmt.Errorf("Unrecognized protein file: '%s'.", file))
 	}
+}
+
+func numJobs(files []string) int {
+	count := 0
+	for _, f := range files {
+		switch {
+		case util.IsFasta(f):
+			n, err := fasta.QuickSequenceCount(util.OpenFasta(f))
+			util.Assert(err, "Could not open '%s'", f)
+			count += n
+		case util.IsPDB(f):
+			count += 1
+		default:
+			util.Fatalf("Unrecognized protein file: '%s'.", f)
+		}
+	}
+	return count
 }
 
 func max(a, b int) int {

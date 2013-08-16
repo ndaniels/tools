@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"runtime"
 	"runtime/pprof"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/TuftsBCB/fragbag/bow"
 	"github.com/TuftsBCB/fragbag/bowdb"
+	"github.com/TuftsBCB/io/fasta"
 	"github.com/TuftsBCB/tools/util"
 )
 
@@ -49,12 +51,13 @@ func init() {
 		"The field to sort search results by.\n"+
 			"Valid values are 'cosine' and 'euclid'.")
 
-	util.FlagUse("cpu", "cpuprof", "verbose", "seq-db", "pdb-hhm-db", "blits",
-		"hhfrag-min", "hhfrag-max", "hhfrag-inc")
+	util.FlagUse("cpu", "cpuprof", "verbose")
 	util.FlagParse(
 		"bowdb-path protein-files",
 		"Where protein files can be files or directories that will be\n"+
-			"searched recursively for FASTA, fmap or PDB files.")
+			"searched recursively for FASTA or PDB files.\n"+
+			"FASTA files are required for searching a sequence databases,\n"+
+			"while PDB files are required for searching a structure database.")
 	util.AssertLeastNArg(2)
 
 	// Convert command line flag values to search option values.
@@ -97,9 +100,20 @@ func main() {
 
 	files := util.AllFilesFromArgs(util.Args()[1:])
 	for _, file := range files {
-		if util.IsFasta(file) || util.IsFmap(file) {
-			bowerChan <- util.GetFmap(file)
-		} else if util.IsPDB(file) {
+		switch {
+		case util.IsFasta(file):
+			freader := fasta.NewReader(util.OpenFile(file))
+			for {
+				s, err := freader.Read()
+				if err != nil {
+					if err == io.EOF {
+						break
+					}
+					util.Assert(err, "Error reading '%s'", file)
+				}
+				bowerChan <- bow.Sequence{s}
+			}
+		case util.IsPDB(file):
 			entry := util.PDBRead(file)
 			for _, chain := range entry.Chains {
 				if chain.IsProtein() {
@@ -110,7 +124,7 @@ func main() {
 					}
 				}
 			}
-		} else {
+		default:
 			util.Warnf("Unrecognized protein file: '%s'.", file)
 		}
 	}
