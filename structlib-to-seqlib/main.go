@@ -67,9 +67,7 @@ func main() {
 	for i := 0; i < structLib.Size(); i++ {
 		fp := seq.NewFrequencyProfile(structLib.FragmentSize())
 		freqProfiles = append(freqProfiles, fp)
-
-		fpChan := make(chan seq.Sequence)
-		fpChans = append(fpChans, fpChan)
+		fpChans = append(fpChans, make(chan seq.Sequence))
 	}
 
 	// Also initialize a special frequency profile for the null model.
@@ -104,6 +102,7 @@ func main() {
 		}()
 	}
 	wgPDBChains.Wait()
+	close(progressChan)
 
 	// We've finishing reading all the PDB inputs. Now close the channels
 	// and let the sequence fragments finish.
@@ -228,6 +227,7 @@ func progress(total int) chan struct{} {
 			pf("\r%d/%d (%0.2f%% complete)", count, total,
 				100.0*(float64(count)/float64(total)))
 		}
+		pf("\n")
 	}()
 	return c
 }
