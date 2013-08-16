@@ -1,6 +1,7 @@
 package util
 
 import (
+	"compress/gzip"
 	"encoding/gob"
 	"fmt"
 	"io"
@@ -167,7 +168,17 @@ func IsFasta(fpath string) bool {
 	suffix := func(ext string) bool {
 		return strings.HasSuffix(fpath, ext)
 	}
-	return suffix(".fasta") || suffix(".fas")
+	return suffix(".fasta") || suffix(".fas") ||
+		suffix(".fasta.gz") || suffix(".fas.gz")
+}
+
+func OpenFasta(fpath string) io.Reader {
+	if strings.HasSuffix(fpath, ".gz") {
+		r, err := gzip.NewReader(OpenFile(fpath))
+		Assert(err, "Could not open '%s'", fpath)
+		return r
+	}
+	return OpenFile(fpath)
 }
 
 func IsFmap(fpath string) bool {
