@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 
-	"github.com/TuftsBCB/fragbag"
 	"github.com/TuftsBCB/fragbag/bow"
 	"github.com/TuftsBCB/tools/util"
 )
@@ -23,11 +22,7 @@ func main() {
 	pdbEntryPath := util.Arg(2)
 	bowOut := util.Arg(3)
 
-	lib := util.Library(libPath)
-	structLib, ok := lib.(*fragbag.StructureLibrary)
-	if !ok {
-		util.Fatalf("Expected StructureLibrary but got %T instead.", lib)
-	}
+	lib := util.StructureLibrary(libPath)
 	entry := util.PDBRead(pdbEntryPath)
 
 	thechain := entry.Chain(chain[0])
@@ -35,7 +30,7 @@ func main() {
 		util.Fatalf("Could not find chain with identifier '%c'.", chain[0])
 	}
 
-	bow := bow.PDBChainStructure{thechain}.StructureBOW(structLib)
+	bow := bow.PDBChainStructure{thechain}.StructureBOW(lib)
 	if bowOut == "--" {
 		fmt.Println(bow)
 	} else {

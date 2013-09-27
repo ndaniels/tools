@@ -35,7 +35,7 @@ func main() {
 	brkContents, err := ioutil.ReadAll(fbrk)
 	util.Assert(err, "Could not read '%s'", brkFile)
 
-	lib := fragbag.NewStructureLibrary(path.Base(brkFile))
+	lib := fragbag.NewStructureAtoms(path.Base(brkFile))
 
 	fragments := bytes.Split(brkContents, []byte("TER"))
 	for i, fragment := range fragments {

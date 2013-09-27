@@ -10,7 +10,7 @@ import (
 	"github.com/TuftsBCB/tools/util"
 )
 
-var lib *fragbag.StructureLibrary
+var lib fragbag.StructureLibrary
 
 func init() {
 	u := "fraglib pdb-file [ chain-id [ start stop ] ]"

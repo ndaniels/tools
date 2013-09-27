@@ -25,16 +25,16 @@ func Library(path string) fragbag.Library {
 	return lib
 }
 
-func StructureLibrary(path string) *fragbag.StructureLibrary {
-	lib, ok := Library(path).(*fragbag.StructureLibrary)
+func StructureLibrary(path string) fragbag.StructureLibrary {
+	lib, ok := Library(path).(fragbag.StructureLibrary)
 	if !ok {
 		Fatalf("%s (%T) is not a structure library.", path, lib)
 	}
 	return lib
 }
 
-func SequenceLibrary(path string) *fragbag.SequenceLibrary {
-	lib, ok := Library(path).(*fragbag.SequenceLibrary)
+func SequenceLibrary(path string) fragbag.SequenceLibrary {
+	lib, ok := Library(path).(fragbag.SequenceLibrary)
 	if !ok {
 		Fatalf("%s (%T) is not a sequence library.", path, lib)
 	}

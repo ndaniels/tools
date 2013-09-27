@@ -30,7 +30,7 @@ var (
 	wgSeqFragments = new(sync.WaitGroup)
 
 	// The structure library supplied by the user.
-	structLib *fragbag.StructureLibrary
+	structLib fragbag.StructureLibrary
 )
 
 func init() {
@@ -114,7 +114,7 @@ func main() {
 
 	// Finally, add the sequence fragments to a new sequence fragment
 	// library and save.
-	seqLib := fragbag.NewSequenceLibrary(structLib.Ident)
+	seqLib := fragbag.NewSequenceProfile(structLib.Name())
 	for i := 0; i < structLib.Size(); i++ {
 		p := freqProfiles[i].Profile(nullProfile)
 		util.Assert(seqLib.Add(p))
