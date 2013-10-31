@@ -4,7 +4,6 @@ import (
 	"encoding/csv"
 	"log"
 	path "path/filepath"
-	// "runtime"
 	"strconv"
 	"strings"
 	"sync"
@@ -14,12 +13,10 @@ import (
 )
 
 type distPairs struct {
-	dists   [][]float64
-	atoms   map[string]uint16
-	current uint16
+	Dists   [][]float64
+	Atoms   map[string]uint16
+	Current uint16
 }
-
-// type distPairs map[[2]string]float64
 
 type pair struct {
 	key  [2]string
@@ -28,50 +25,50 @@ type pair struct {
 
 func (dp *distPairs) addPair(p pair) {
 	k1, k2 := dp.intern(p.key[0]), dp.intern(p.key[1])
-	if dp.dists == nil {
-		dp.dists = make([][]float64, 1000)
+	if dp.Dists == nil {
+		dp.Dists = make([][]float64, 1000)
 	}
-	if k1 >= uint16(len(dp.dists)) {
-		newLength := uint16(2 * len(dp.dists))
+	if k1 >= uint16(len(dp.Dists)) {
+		newLength := uint16(2 * len(dp.Dists))
 		if k1 >= newLength {
 			newLength = k1 + 1
 		}
 		n := make([][]float64, newLength)
-		copy(n, dp.dists)
-		dp.dists = n
+		copy(n, dp.Dists)
+		dp.Dists = n
 	}
-	if dp.dists[k1] == nil {
-		dp.dists[k1] = make([]float64, 1000)
+	if dp.Dists[k1] == nil {
+		dp.Dists[k1] = make([]float64, 1000)
 	}
-	if k2 >= uint16(len(dp.dists[k1])) {
-		newLength := uint16(2 * len(dp.dists[k1]))
+	if k2 >= uint16(len(dp.Dists[k1])) {
+		newLength := uint16(2 * len(dp.Dists[k1]))
 		if k2 >= newLength {
 			newLength = k2 + 1
 		}
 		n := make([]float64, newLength)
-		copy(n, dp.dists[k1])
-		dp.dists[k1] = n
+		copy(n, dp.Dists[k1])
+		dp.Dists[k1] = n
 	}
-	dp.dists[k1][k2] = p.dist
+	dp.Dists[k1][k2] = p.dist
 }
 
 func (dp *distPairs) intern(s string) uint16 {
-	if i, ok := dp.atoms[s]; ok {
+	if i, ok := dp.Atoms[s]; ok {
 		return i
 	}
-	dp.atoms[s] = dp.current
-	dp.current++
-	if dp.current == 0 {
+	dp.Atoms[s] = dp.Current
+	dp.Current++
+	if dp.Current == 0 {
 		panic("string interning overflow")
 	}
-	return dp.current - 1
+	return dp.Current - 1
 }
 
 func readAlignmentDists(dir string) *distPairs {
 	dists := &distPairs{
-		dists:   make([][]float64, 11000),
-		atoms:   make(map[string]uint16, 11000),
-		current: 0,
+		Dists:   make([][]float64, 11000),
+		Atoms:   make(map[string]uint16, 11000),
+		Current: 0,
 	}
 	threads := util.FlagCpu
 	addDists := make(chan []pair)
@@ -124,11 +121,6 @@ func readAlignmentDists(dir string) *distPairs {
 			continue
 		}
 		alignFile <- fpath
-		// if i % 20 == 0 {
-		// log.Println("Running GC...")
-		// runtime.GC()
-		// log.Println("Done.")
-		// }
 	}
 	close(alignFile)
 	wg.Wait()
@@ -138,22 +130,31 @@ func readAlignmentDists(dir string) *distPairs {
 }
 
 func (dp *distPairs) dist(p1, p2 string) float64 {
+	if p1 == p2 {
+		return 0
+	}
+
 	var k1, k2 uint16
 	var ok bool
 	if p2 < p1 {
 		p1, p2 = p2, p1
 	}
 
-	k1, ok = dp.atoms[p1]
+	k1, ok = dp.Atoms[p1]
 	if !ok {
-		util.Fatalf("Could not find distance for pair (%s, %s).", p1, p2)
+		return -1
+		// util.Fatalf("Could not find distance for pair (%s, %s).", p1, p2)
 	}
 
-	k2, ok = dp.atoms[p2]
+	k2, ok = dp.Atoms[p2]
 	if !ok {
-		util.Fatalf("Could not find distance for pair (%s, %s).", p1, p2)
+		return -1
+		// util.Fatalf("Could not find distance for pair (%s, %s).", p1, p2)
 	}
-	return dp.dists[k1][k2]
+	if k1 >= uint16(len(dp.Dists)) || k2 >= uint16(len(dp.Dists[k1])) {
+		return -1
+	}
+	return dp.Dists[k1][k2]
 }
 
 func recordToDist(record []string) pair {
