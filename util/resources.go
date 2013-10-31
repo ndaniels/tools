@@ -94,6 +94,28 @@ func PDBPath(pid string) string {
 	return path.Join(pdbPath, group, basename)
 }
 
+// ScopPath takes a SCOP identifier (e.g., "d3ciua1" or "d1g09c_") and returns
+// the full path to the PDB file on the file system.
+//
+// The SCOP_PDB_PATH environment variable must be set.
+func ScopPath(pid string) string {
+	if len(pid) != 7 {
+		Fatalf("SCOP domain ids must contain 7 characters, but '%s' has %d.",
+			pid, len(pid))
+	}
+	pdbPath := os.Getenv("SCOP_PDB_PATH")
+	if len(pdbPath) == 0 || !IsDir(pdbPath) {
+		Fatalf("The SCOP_PDB_PATH environment variable must be set to open " +
+			"PDB files of SCOP domain by just their ID.\n" +
+			"SCOP_PDB_PATH should be set to the directory containing a full " +
+			"copy of the SCOP database as PDB formatted files.")
+	}
+
+	group := pid[2:4]
+	basename := fmt.Sprintf("%s.ent", pid)
+	return path.Join(pdbPath, group, basename)
+}
+
 func PDBReadId(pid string) (*pdb.Entry, *pdb.Chain) {
 	e := PDBRead(PDBPath(pid))
 	if IsChainID(pid) {
