@@ -19,9 +19,16 @@ import (
 	"github.com/TuftsBCB/seq"
 )
 
-func Library(path string) fragbag.Library {
-	lib, err := fragbag.Open(OpenFile(path))
-	Assert(err, "Could not open fragment library '%s'", path)
+func Library(fpath string) fragbag.Library {
+	libPath := os.Getenv("FRAGLIB_PATH")
+	if path.Dir(fpath) == "." && !Exists(fpath) && len(libPath) > 0 {
+		fpath = path.Join(libPath, fpath)
+		if !strings.HasSuffix(fpath, ".json") {
+			fpath += ".json"
+		}
+	}
+	lib, err := fragbag.Open(OpenFile(fpath))
+	Assert(err, "Could not open fragment library '%s'", fpath)
 	return lib
 }
 
