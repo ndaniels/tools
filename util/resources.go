@@ -215,8 +215,16 @@ func IsFmap(fpath string) bool {
 }
 
 func IsPDB(fpath string) bool {
+	pieces := strings.Split(path.Base(fpath), ":")
+	base := pieces[0]
+	if path.Dir(fpath) == "." {
+		if len(base) == 4 || (len(base) == 7 && base[0] == 'd') {
+			return true
+		}
+	}
+
 	suffix := func(ext string) bool {
-		return strings.HasSuffix(fpath, ext)
+		return strings.HasSuffix(base, ext)
 	}
 	return suffix(".ent.gz") || suffix(".pdb") || suffix(".ent")
 }
