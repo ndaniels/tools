@@ -5,8 +5,8 @@ type Progress struct {
 	done chan struct{}
 }
 
-func NewProgress(total int) Progress {
-	p := Progress{make(chan error), make(chan struct{})}
+func NewProgress(total int) *Progress {
+	p := &Progress{make(chan error), make(chan struct{})}
 	go func() {
 		completed := 0
 		errorCount := 0
@@ -32,11 +32,17 @@ func NewProgress(total int) Progress {
 	return p
 }
 
-func (p Progress) JobDone(err error) {
+func (p *Progress) JobDone(err error) {
+	if p == nil {
+		return
+	}
 	p.errs <- err
 }
 
-func (p Progress) Close() {
+func (p *Progress) Close() {
+	if p == nil {
+		return
+	}
 	close(p.errs)
 	<-p.done
 }

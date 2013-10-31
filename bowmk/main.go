@@ -76,7 +76,7 @@ func main() {
 	util.Assert(db.Close())
 }
 
-func addToDB(db *bowdb.DB, file string, progress util.Progress) {
+func addToDB(db *bowdb.DB, file string, progress *util.Progress) {
 	switch {
 	case util.IsFasta(file):
 		fp, err := os.Open(file)
