@@ -33,14 +33,14 @@ func ProcessBowers(
 	n int,
 	hideProgress bool,
 ) <-chan Bowered {
-	results := make(chan Bowered, 100)
+	results := make(chan Bowered, n*2)
 	go func() {
 		totalJobs := 0
 		if !hideProgress {
 			totalJobs = numJobs(fpaths)
 		}
 
-		bs := make(chan bow.Bower, 100)
+		bs := make(chan bow.Bower, n*2)
 		wg := new(sync.WaitGroup)
 		if n <= 0 {
 			n = 1
