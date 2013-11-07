@@ -2,6 +2,7 @@ package util
 
 import (
 	"compress/gzip"
+	"fmt"
 	"io"
 	"os"
 	path "path/filepath"
@@ -151,6 +152,7 @@ func BowerOpen(fpath string, lib fragbag.Library) <-chan BowerErr {
 			fp, idents := pdbNameParse(fpath)
 			entry, err := pdb.ReadPDB(fp)
 			if err != nil {
+				err = fmt.Errorf("Error reading '%s': %s", fp, err)
 				bowers <- BowerErr{Err: err}
 				return
 			}
@@ -178,8 +180,13 @@ func BowerOpen(fpath string, lib fragbag.Library) <-chan BowerErr {
 				}
 			} else {
 				for i := range chains {
-					b := bow.Sequence{chains[i].AsSequence()}
-					bowers <- BowerErr{Bower: b}
+					s := chains[i].AsSequence()
+					if s.Len() == 0 {
+						Warnf("Chain '%s:%c' does not have an amino sequence.",
+							entry.IdCode, chains[i].Ident)
+						continue
+					}
+					bowers <- BowerErr{Bower: bow.Sequence{s}}
 				}
 			}
 		}()
@@ -190,6 +197,7 @@ func BowerOpen(fpath string, lib fragbag.Library) <-chan BowerErr {
 
 			r, fp, err := fastaOpen(fpath)
 			if err != nil {
+				err = fmt.Errorf("Error reading file: %s", err)
 				bowers <- BowerErr{Err: err}
 				return
 			}
@@ -202,6 +210,7 @@ func BowerOpen(fpath string, lib fragbag.Library) <-chan BowerErr {
 					if err == io.EOF {
 						break
 					}
+					err = fmt.Errorf("Error reading file: %s", err)
 					bowers <- BowerErr{Err: err}
 					return
 				}
