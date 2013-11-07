@@ -85,7 +85,7 @@ func ProcessBowers(
 		}
 		close(bs)
 		wg.Wait()
-		// progress.Close()
+		progress.Close()
 		close(results)
 	}()
 	return results
