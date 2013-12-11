@@ -17,7 +17,6 @@ func main() {
 	seqLib := util.SequenceLibrary(libPath)
 	fmt.Println(seqLib)
 	for i := 0; i < seqLib.Size(); i++ {
-		frag := seqLib.Fragment(i)
-		fmt.Printf("%s\n\n", frag.String())
+		fmt.Printf("%s\n\n", seqLib.FragmentString(i))
 	}
 }

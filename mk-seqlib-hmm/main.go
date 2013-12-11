@@ -154,7 +154,7 @@ func structureToSequence(chain *pdb.Chain, msaChans []chan seq.Sequence) {
 			// So skip this part of the chain.
 			continue
 		}
-		bestFrag := structLib.Best(atoms)
+		bestFrag := structLib.BestStructureFragment(atoms)
 
 		sliced := sequence.Slice(start, end)
 		msaChans[bestFrag] <- sliced

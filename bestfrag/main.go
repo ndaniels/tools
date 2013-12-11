@@ -59,7 +59,7 @@ func main() {
 func bestFragsForRegion(chain *pdb.Chain, atoms []structure.Coords, s, e int) {
 	fsize := lib.FragmentSize()
 	for i := s; i <= e-fsize; i++ {
-		best := lib.Best(atoms[i : i+fsize])
+		best := lib.BestStructureFragment(atoms[i : i+fsize])
 		fmt.Println(chain.Entry.IdCode, string(chain.Ident), i+1, i+fsize, best)
 	}
 }

@@ -150,7 +150,7 @@ func structureToSequence(
 			// So skip this part of the chain.
 			continue
 		}
-		bestFrag := structLib.Best(atoms)
+		bestFrag := structLib.BestStructureFragment(atoms)
 
 		sliced := sequence.Slice(start, end)
 		fpChans[bestFrag] <- sliced
