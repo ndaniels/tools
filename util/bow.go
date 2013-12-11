@@ -104,7 +104,7 @@ type BowerErr struct {
 // `bow.Bower` values returned is guaranteed to be homogenous: they will
 // either be all `bow.SequenceBower` values or `bow.StructureBower` values.
 //
-// The actual return value of the function is a receive-only channel BowerErr
+// The actual return value of the function is a receive-only channel of BowerErr
 // values. Each BowerErr value either has the `Bower` member set or has the
 // `err` field set to an error that prevented the file from being opened.
 //
@@ -249,8 +249,7 @@ func numJobs(fpaths []string) int {
 		case IsPDB(fpath):
 			count += 1
 		default:
-			Fatalf("I don't know how to produce a Fragbag frequency vector "+
-				"from the file '%s'.", fpath)
+			count += 1 // Errors result in a single call to JobDone.
 		}
 	}
 	return count

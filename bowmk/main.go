@@ -131,7 +131,7 @@ func numJobs(files []string) int {
 		case util.IsPDB(f):
 			count += 1
 		default:
-			util.Fatalf("Unrecognized protein file: '%s'.", f)
+			count += 1 // Errors result in a single call to JobDone.
 		}
 	}
 	return count
