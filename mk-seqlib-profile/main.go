@@ -114,12 +114,13 @@ func main() {
 
 	// Finally, add the sequence fragments to a new sequence fragment
 	// library and save.
-	seqLib := fragbag.NewSequenceProfile(structLib.Name())
+	profs := make([]*seq.Profile, structLib.Size())
 	for i := 0; i < structLib.Size(); i++ {
-		p := freqProfiles[i].Profile(nullProfile)
-		util.Assert(seqLib.Add(p))
+		profs[i] = freqProfiles[i].Profile(nullProfile)
 	}
-	util.Assert(seqLib.Save(util.CreateFile(saveto)))
+	lib, err := fragbag.NewSequenceProfile(structLib.Name(), profs)
+	util.Assert(err)
+	util.Assert(fragbag.Save(util.CreateFile(saveto), lib))
 }
 
 // structureToSequence uses structural fragments to categorize a segment

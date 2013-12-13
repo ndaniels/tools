@@ -35,22 +35,22 @@ func main() {
 	brkContents, err := ioutil.ReadAll(fbrk)
 	util.Assert(err, "Could not read '%s'", brkFile)
 
-	lib := fragbag.NewStructureAtoms(path.Base(brkFile))
-
-	fragments := bytes.Split(brkContents, []byte("TER"))
-	for i, fragment := range fragments {
-		fragment = bytes.TrimSpace(fragment)
-		if len(fragment) == 0 {
+	pdbFragments := bytes.Split(brkContents, []byte("TER"))
+	fragments := make([][]structure.Coords, 0)
+	for i, pdbFrag := range pdbFragments {
+		pdbFrag = bytes.TrimSpace(pdbFrag)
+		if len(pdbFrag) == 0 {
 			continue
 		}
-		atoms := coords(i, fragment)
-		lib.Add(atoms)
+		fragments = append(fragments, coords(i, pdbFrag))
 	}
 
 	savetof := util.CreateFile(saveto)
 	defer savetof.Close()
 
-	lib.Save(savetof)
+	lib, err := fragbag.NewStructureAtoms(path.Base(brkFile), fragments)
+	util.Assert(err)
+	fragbag.Save(savetof, lib)
 }
 
 func coords(num int, atomRecords []byte) []structure.Coords {

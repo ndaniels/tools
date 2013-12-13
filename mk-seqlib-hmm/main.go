@@ -117,7 +117,7 @@ func main() {
 
 	// Finally, add the sequence fragments to a new sequence fragment
 	// library and save.
-	seqLib := fragbag.NewSequenceHMM(structLib.Name())
+	hmms := make([]*seq.HMM, structLib.Size())
 	for i := 0; i < structLib.Size(); i++ {
 		fname := path.Join(tempDir, fmt.Sprintf("%d.fasta", i))
 		f := util.CreateFile(fname)
@@ -125,9 +125,12 @@ func main() {
 
 		hhm, err := hhsuite.HHMakePseudo.Run(fname)
 		util.Assert(err)
-		util.Assert(seqLib.Add(hhm.HMM))
+		hmms[i] = hhm.HMM
 	}
-	util.Assert(seqLib.Save(util.CreateFile(saveto)))
+
+	lib, err := fragbag.NewSequenceHMM(structLib.Name(), hmms)
+	util.Assert(err)
+	util.Assert(fragbag.Save(util.CreateFile(saveto), lib))
 }
 
 // structureToSequence uses structural fragments to categorize a segment
