@@ -15,10 +15,10 @@ func NewProgress(total int) *Progress {
 				completed += 1
 			} else {
 				errorCount += 1
-				if FlagVerbose {
-					Warnf("\r%s                                    \n", err)
-				} else {
+				if FlagQuiet {
 					Warnf("%s", err)
+				} else {
+					Warnf("\r%s                                    \n", err)
 				}
 			}
 

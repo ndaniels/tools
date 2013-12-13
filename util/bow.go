@@ -5,14 +5,12 @@ import (
 	"fmt"
 	"io"
 	"os"
-	path "path/filepath"
 	"strings"
 	"sync"
 
 	"github.com/TuftsBCB/fragbag"
 	"github.com/TuftsBCB/fragbag/bow"
 	"github.com/TuftsBCB/io/fasta"
-	"github.com/TuftsBCB/io/pdb"
 )
 
 type Bowered struct {
@@ -149,28 +147,11 @@ func BowerOpen(fpath string, lib fragbag.Library) <-chan BowerErr {
 		go func() {
 			defer close(bowers)
 
-			fp, idents := pdbNameParse(fpath)
-			entry, err := pdb.ReadPDB(fp)
+			entry, chains, err := PDBOpen(fpath)
 			if err != nil {
-				err = fmt.Errorf("Error reading '%s': %s", fp, err)
+				err = fmt.Errorf("Error reading '%s': %s", fpath, err)
 				bowers <- BowerErr{Err: err}
 				return
-			}
-
-			var chains []*pdb.Chain
-			if len(idents) == 0 {
-				chains = entry.Chains
-			} else {
-				chains = make([]*pdb.Chain, 0, 5)
-				for _, c := range idents {
-					chain := entry.Chain(c)
-					if chain == nil {
-						Warnf("Chain '%c' does not exist for '%s'.",
-							c, entry.IdCode)
-						continue
-					}
-					chains = append(chains, chain)
-				}
 			}
 
 			if fragbag.IsStructure(lib) {
@@ -253,37 +234,6 @@ func numJobs(fpaths []string) int {
 		}
 	}
 	return count
-}
-
-// pdbParse returns the actual file path and a list of chain identifiers.
-// When the list of chain identifiers is empty, then no specific chains were
-// specified.
-func pdbNameParse(fpath string) (string, []byte) {
-	dir, base := path.Dir(fpath), path.Base(fpath)
-	pieces := strings.Split(base, ":")
-	if len(pieces) > 2 {
-		Fatalf("Too many colons in PDB file path '%s'.", fpath)
-	}
-
-	var idents []byte
-	base = pieces[0]
-	if len(pieces) > 1 {
-		chains := strings.Split(pieces[1], ",")
-		idents = make([]byte, len(chains))
-		for i := range chains {
-			if len(chains[i]) > 1 {
-				Fatalf("Chain '%s' is more than one character.", chains[i])
-			}
-			idents[i] = byte(chains[i][0])
-		}
-	}
-
-	if dir == "." && len(base) == 4 {
-		return PDBPath(base), idents
-	} else if dir == "." && len(base) == 7 && base[0] == 'd' {
-		return ScopPath(base), idents
-	}
-	return path.Join(dir, base), idents
 }
 
 // fastaOpen tries to open a FASTA file for reading. Both an io.Reader and a

@@ -16,7 +16,7 @@ func printf(format string, v ...interface{}) {
 }
 
 func Verbosef(format string, v ...interface{}) {
-	if FlagVerbose {
+	if !FlagQuiet {
 		printf(format, v...)
 	}
 }
@@ -28,11 +28,11 @@ func Warnf(format string, v ...interface{}) {
 func Warning(err error, v ...interface{}) bool {
 	if err != nil {
 		if len(v) == 0 {
-			Warnf("WARNING: %s.", err)
+			Warnf("WARNING: %s", err)
 		} else {
 			format := v[0].(string)
 			v = v[1:]
-			Warnf("%s: %s.", fmt.Sprintf(format, v...), err)
+			Warnf("%s: %s", fmt.Sprintf(format, v...), err)
 		}
 		return true
 	}
@@ -46,11 +46,11 @@ func Fatalf(format string, v ...interface{}) {
 func Assert(err error, v ...interface{}) {
 	if err != nil {
 		if len(v) == 0 {
-			Fatalf("ERROR: %s.", err)
+			Fatalf("ERROR: %s", err)
 		} else {
 			format := v[0].(string)
 			v = v[1:]
-			Fatalf("%s: %s.", fmt.Sprintf(format, v...), err)
+			Fatalf("%s: %s", fmt.Sprintf(format, v...), err)
 		}
 	}
 }

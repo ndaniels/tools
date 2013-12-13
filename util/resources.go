@@ -21,7 +21,7 @@ import (
 
 func Library(fpath string) fragbag.Library {
 	libPath := os.Getenv("FRAGLIB_PATH")
-	if path.Dir(fpath) == "." && !Exists(fpath) && len(libPath) > 0 {
+	if !Exists(fpath) && len(libPath) > 0 {
 		fpath = path.Join(libPath, fpath)
 		if !strings.HasSuffix(fpath, ".json") {
 			fpath += ".json"
@@ -33,19 +33,21 @@ func Library(fpath string) fragbag.Library {
 }
 
 func StructureLibrary(path string) fragbag.StructureLibrary {
-	lib, ok := Library(path).(fragbag.StructureLibrary)
+	lib := Library(path)
+	libStruct, ok := lib.(fragbag.StructureLibrary)
 	if !ok {
 		Fatalf("%s (%T) is not a structure library.", path, lib)
 	}
-	return lib
+	return libStruct
 }
 
 func SequenceLibrary(path string) fragbag.SequenceLibrary {
-	lib, ok := Library(path).(fragbag.SequenceLibrary)
+	lib := Library(path)
+	libSeq, ok := lib.(fragbag.SequenceLibrary)
 	if !ok {
 		Fatalf("%s (%T) is not a sequence library.", path, lib)
 	}
-	return lib
+	return libSeq
 }
 
 func MSA(path string) seq.MSA {
@@ -63,6 +65,69 @@ func OpenBOWDB(path string) *bowdb.DB {
 	db, err := bowdb.OpenDB(path)
 	Assert(err, "Could not open BOW database '%s'", path)
 	return db
+}
+
+func PDBOpenMust(fpath string) (*pdb.Entry, []*pdb.Chain) {
+	entry, chains, err := PDBOpen(fpath)
+	Assert(err)
+	return entry, chains
+}
+
+func PDBOpen(fpath string) (*pdb.Entry, []*pdb.Chain, error) {
+	pdbNameParse := func(fpath string) (string, []byte) {
+		dir, base := path.Dir(fpath), path.Base(fpath)
+		pieces := strings.Split(base, ":")
+		if len(pieces) > 2 {
+			Fatalf("Too many colons in PDB file path '%s'.", fpath)
+		}
+
+		var idents []byte
+		base = pieces[0]
+		if len(pieces) > 1 {
+			chains := strings.Split(pieces[1], ",")
+			idents = make([]byte, len(chains))
+			for i := range chains {
+				if len(chains[i]) > 1 {
+					Fatalf("Chain '%s' is more than one character.", chains[i])
+				}
+				idents[i] = byte(chains[i][0])
+			}
+		} else if len(base) == 5 { // special case for '{pdb-id}{chain-id}'
+			idents = []byte{base[4]}
+			base = base[0:4]
+		}
+
+		if dir == "." && len(base) == 4 {
+			return PDBPath(base), idents
+		} else if dir == "." && len(base) == 7 && base[0] == 'd' {
+			return ScopPath(base), idents
+		}
+		return path.Join(dir, base), idents
+	}
+
+	fp, idents := pdbNameParse(fpath)
+	entry, err := pdb.ReadPDB(fp)
+	if err != nil {
+		err = fmt.Errorf("Error reading '%s': %s", fp, err)
+		return nil, nil, err
+	}
+
+	var chains []*pdb.Chain
+	if len(idents) == 0 {
+		chains = entry.Chains
+	} else {
+		chains = make([]*pdb.Chain, 0, 5)
+		for _, c := range idents {
+			chain := entry.Chain(c)
+			if chain == nil {
+				Warnf("Chain '%c' does not exist for '%s'.",
+					c, entry.IdCode)
+				continue
+			}
+			chains = append(chains, chain)
+		}
+	}
+	return entry, chains, nil
 }
 
 func PDBRead(path string) *pdb.Entry {
@@ -218,7 +283,9 @@ func IsPDB(fpath string) bool {
 	pieces := strings.Split(path.Base(fpath), ":")
 	base := pieces[0]
 	if path.Dir(fpath) == "." {
-		if len(base) == 4 || (len(base) == 7 && base[0] == 'd') {
+		if len(base) == 4 ||
+			len(base) == 5 ||
+			(len(base) == 7 && base[0] == 'd') {
 			return true
 		}
 	}

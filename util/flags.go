@@ -27,7 +27,7 @@ var (
 
 	HHfragConf = hhfrag.DefaultConfig
 
-	FlagVerbose = true
+	FlagQuiet = false
 )
 
 func init() {
@@ -111,7 +111,7 @@ var commonFlags = map[string]*commonFlag{
 	},
 	"verbose": {
 		set: func() {
-			flag.BoolVar(&FlagVerbose, "verbose", FlagVerbose,
+			flag.BoolVar(&FlagQuiet, "verbose", !FlagQuiet,
 				"When set, diagnostic output will be shown on stderr.")
 		},
 	},
