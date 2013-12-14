@@ -23,6 +23,10 @@ type Bowered struct {
 // bower value in parallel and sends the resulting BOW value on the channel
 // returned. The number of goroutines spawned is equivalent to N.
 //
+// It is appropriate for fpaths to be the arguments given to be command line
+// arguments. Each directory is recursively expanded to its files, and special
+// syntax is parsed as well.
+//
 // If `hideProgress` is true, then a progress bar will not be emitted to
 // stderr.
 func ProcessBowers(
@@ -35,6 +39,7 @@ func ProcessBowers(
 		n = 1
 	}
 	results := make(chan Bowered, n*2)
+	fpaths = AllFilesFromArgs(fpaths)
 
 	go func() {
 		var progress *Progress
@@ -133,6 +138,11 @@ type BowerErr struct {
 // The actual return value of the function is a receive-only channel of BowerErr
 // values. Each BowerErr value either has the `Bower` member set or has the
 // `err` field set to an error that prevented the file from being opened.
+// Errors in this case are reserved for files that appear to be capable of
+// producing a BOW, but were unable to be read.
+//
+// If the fpath given cannot be detected as a bower file, then a closed empty
+// channel will be returned. A warning is also emitted to stderr.
 //
 // `lib` is a fragment library that is used to help interpret what kind of
 // value must be in `r`. For example, if `lib` is a sequence fragment library,
@@ -157,6 +167,14 @@ type BowerErr struct {
 //	1ctf.ent.gz:A     Only chain A
 //	1ctf.ent.gz:B     Only chain B
 //	1ctf.ent.gz:A,B   Chains A and B
+//
+// A secondary format is also accepted. The following are equivalent to their
+// corresponding examples above:
+//
+//	1ctf
+//	1ctfA
+//	1ctfB
+//	1ctf:A,B
 //
 // Finally, `fpath` may be the name of a PDB identifier and its file path will
 // be inferred from the value of the `PDB_PATH` environment variable.
@@ -184,11 +202,19 @@ func BowerOpen(fpath string, lib fragbag.Library) <-chan BowerErr {
 
 			if fragbag.IsStructure(lib) {
 				for i := range chains {
+					if !chains[i].IsProtein() {
+						continue
+					}
+
 					b := bow.PDBChainStructure{chains[i]}
 					bowers <- BowerErr{Bower: b}
 				}
 			} else {
 				for i := range chains {
+					if !chains[i].IsProtein() {
+						continue
+					}
+
 					s := chains[i].AsSequence()
 					if s.Len() == 0 {
 						Warnf("Chain '%s:%c' does not have an amino sequence.",
@@ -228,9 +254,10 @@ func BowerOpen(fpath string, lib fragbag.Library) <-chan BowerErr {
 		}()
 		return bowers
 	}
-	Fatalf("I don't know how to produce a Fragbag frequency vector "+
+	Warnf("I don't know how to produce a Fragbag frequency vector "+
 		"from the file '%s'.", fpath)
-	panic("unreachable")
+	close(bowers)
+	return bowers
 }
 
 // numJobs returns an appoximate number of Bower values from the list of files
