@@ -77,13 +77,12 @@ func PDBOpen(fpath string) (*pdb.Entry, []*pdb.Chain, error) {
 	pdbNameParse := func(fpath string) (string, []byte) {
 		dir, base := path.Dir(fpath), path.Base(fpath)
 		pieces := strings.Split(base, ":")
-		if len(pieces) > 2 {
-			Fatalf("Too many colons in PDB file path '%s'.", fpath)
-		}
 
 		var idents []byte
 		base = pieces[0]
-		if len(pieces) > 1 {
+		if len(pieces) > 2 {
+			Fatalf("Too many colons in PDB file path '%s'.", fpath)
+		} else if len(pieces) == 2 {
 			chains := strings.Split(pieces[1], ",")
 			idents = make([]byte, len(chains))
 			for i := range chains {
