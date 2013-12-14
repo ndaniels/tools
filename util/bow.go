@@ -31,30 +31,48 @@ func ProcessBowers(
 	n int,
 	hideProgress bool,
 ) <-chan Bowered {
+	if n <= 0 {
+		n = 1
+	}
 	results := make(chan Bowered, n*2)
+
 	go func() {
+		var progress *Progress
 		totalJobs := 0
 		if !hideProgress {
 			totalJobs = numJobs(fpaths)
+			progress = NewProgress(totalJobs)
 		}
 
+		// We use two levels of concurrency here. The first is at the level
+		// of translating files into bowers. The second is at the level of
+		// computing BOWs from bowers.
+		// The first level is necessary because there can a large number of
+		// bower files given, where each file only produces a few BOWs.
+		// The second level is necessary because there is a lot of variation
+		// between the number of bowers that a single file can produce. For
+		// example, while most PDB files only produce a few, some FASTA files
+		// can produce millions.
+
+		files := make(chan string, n*2)
 		bs := make(chan bow.Bower, n*2)
-		wg := new(sync.WaitGroup)
-		if n <= 0 {
-			n = 1
-		}
+		wgBowers := new(sync.WaitGroup)
+		wgFiles := new(sync.WaitGroup)
+
+		// goroutines for computing BOWs from bowers
 		for i := 0; i < n; i++ {
-			wg.Add(1)
+			wgBowers.Add(1)
 			go func() {
-				defer wg.Done()
+				defer wgBowers.Done()
 				for b := range bs {
 					var bag bow.BOW
-					switch lib := lib.(type) {
-					case fragbag.StructureLibrary:
+					if fragbag.IsStructure(lib) {
+						lib := lib.(fragbag.StructureLibrary)
 						bag = b.(bow.StructureBower).StructureBOW(lib)
-					case fragbag.SequenceLibrary:
+					} else if fragbag.IsSequence(lib) {
+						lib := lib.(fragbag.SequenceLibrary)
 						bag = b.(bow.SequenceBower).SequenceBOW(lib)
-					default:
+					} else {
 						Fatalf("Unknown fragment library %T", lib)
 					}
 					results <- Bowered{b.Id(), b.Data(), bag}
@@ -62,28 +80,38 @@ func ProcessBowers(
 			}()
 		}
 
-		var progress *Progress
-		if !hideProgress {
-			progress = NewProgress(totalJobs)
+		// goroutines for translating files into bowers
+		for i := 0; i < n; i++ {
+			wgFiles.Add(1)
+			go func() {
+				defer wgFiles.Done()
+
+				for fpath := range files {
+					var err error
+					for b := range BowerOpen(fpath, lib) {
+						if b.Err != nil {
+							err = b.Err
+						} else {
+							bs <- b.Bower
+						}
+						if IsFasta(fpath) { // each sequence counts
+							progress.JobDone(err)
+						}
+					}
+					if IsPDB(fpath) { // PDB file only counts as one job
+						progress.JobDone(err)
+					}
+				}
+			}()
 		}
 		for _, fpath := range fpaths {
-			var err error
-			for b := range BowerOpen(fpath, lib) {
-				if b.Err != nil {
-					err = b.Err
-				} else {
-					bs <- b.Bower
-				}
-				if IsFasta(fpath) { // each sequence counts
-					progress.JobDone(err)
-				}
-			}
-			if IsPDB(fpath) { // PDB file only counts as one job
-				progress.JobDone(err)
-			}
+			files <- fpath
 		}
+
+		close(files)
+		wgFiles.Wait()
 		close(bs)
-		wg.Wait()
+		wgBowers.Wait()
 		progress.Close()
 		close(results)
 	}()
