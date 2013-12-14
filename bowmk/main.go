@@ -24,7 +24,7 @@ func init() {
 	flag.BoolVar(&flagOverwrite, "overwrite", flagOverwrite,
 		"When set, any existing database will be completely overwritten.")
 
-	util.FlagUse("cpu", "cpuprof", "verbose")
+	util.FlagUse("cpu", "cpuprof")
 	util.FlagParse(
 		"bowdb-path frag-lib-path "+
 			"(protein-dir | (protein-file [protein-file ...]))",
