@@ -13,7 +13,7 @@ func init() {
 }
 
 func main() {
-	bow1 := util.BOWRead(util.Arg(0))
-	bow2 := util.BOWRead(util.Arg(1))
-	fmt.Printf("%0.4f\n", math.Abs(bow1.Cosine(bow2)))
+	b1 := util.BowRead(util.Arg(0))
+	b2 := util.BowRead(util.Arg(1))
+	fmt.Printf("%0.4f\n", math.Abs(b1.Bow.Cosine(b2.Bow)))
 }

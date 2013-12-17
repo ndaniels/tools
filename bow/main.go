@@ -30,10 +30,10 @@ func main() {
 		util.Fatalf("Could not find chain with identifier '%c'.", chain[0])
 	}
 
-	bow := bow.PDBChainStructure{thechain}.StructureBOW(lib)
+	bow := bow.BowerFromChain(thechain).StructureBow(lib)
 	if bowOut == "--" {
 		fmt.Println(bow)
 	} else {
-		util.BOWWrite(util.CreateFile(bowOut), bow)
+		util.BowWrite(util.CreateFile(bowOut), bow)
 	}
 }

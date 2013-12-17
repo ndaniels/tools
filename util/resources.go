@@ -61,8 +61,8 @@ func MSA(path string) seq.MSA {
 	return aligned
 }
 
-func OpenBOWDB(path string) *bowdb.DB {
-	db, err := bowdb.OpenDB(path)
+func OpenBowDB(path string) *bowdb.DB {
+	db, err := bowdb.Open(path)
 	Assert(err, "Could not open BOW database '%s'", path)
 	return db
 }
@@ -224,19 +224,19 @@ func FmapWrite(w io.Writer, fmap *hhfrag.FragmentMap) {
 	Assert(encoder.Encode(fmap), "Could not GOB encode fragment map")
 }
 
-func BOWRead(path string) bow.BOW {
-	var bow bow.BOW
+func BowRead(path string) bow.Bowed {
+	var b bow.Bowed
 	f := OpenFile(path)
 	defer f.Close()
 
 	r := gob.NewDecoder(f)
-	Assert(r.Decode(&bow), "Could not GOB decode BOW '%s'", path)
-	return bow
+	Assert(r.Decode(&b), "Could not GOB decode BOW '%s'", path)
+	return b
 }
 
-func BOWWrite(w io.Writer, bow bow.BOW) {
+func BowWrite(w io.Writer, b bow.Bowed) {
 	encoder := gob.NewEncoder(w)
-	Assert(encoder.Encode(bow), "Could not GOB encode BOW")
+	Assert(encoder.Encode(b), "Could not GOB encode BOW")
 }
 
 func OpenFile(path string) *os.File {

@@ -13,12 +13,6 @@ import (
 	"github.com/TuftsBCB/io/fasta"
 )
 
-type Bowered struct {
-	Id   string
-	Data []byte
-	Bow  bow.BOW
-}
-
 // ProcessBowers is a convenient wrapper around BowerOpen that processes each
 // bower value in parallel and sends the resulting BOW value on the channel
 // returned. The number of goroutines spawned is equivalent to N.
@@ -34,11 +28,11 @@ func ProcessBowers(
 	lib fragbag.Library,
 	n int,
 	hideProgress bool,
-) <-chan Bowered {
+) <-chan bow.Bowed {
 	if n <= 0 {
 		n = 1
 	}
-	results := make(chan Bowered, n*2)
+	results := make(chan bow.Bowed, n*2)
 	fpaths = AllFilesFromArgs(fpaths)
 
 	go func() {
@@ -60,7 +54,7 @@ func ProcessBowers(
 		// can produce millions.
 
 		files := make(chan string, n*2)
-		bs := make(chan bow.Bower, n*2)
+		bs := make(chan interface{}, n*2) // channel of bowers
 		wgBowers := new(sync.WaitGroup)
 		wgFiles := new(sync.WaitGroup)
 
@@ -70,17 +64,17 @@ func ProcessBowers(
 			go func() {
 				defer wgBowers.Done()
 				for b := range bs {
-					var bag bow.BOW
+					var bw bow.Bowed
 					if fragbag.IsStructure(lib) {
 						lib := lib.(fragbag.StructureLibrary)
-						bag = b.(bow.StructureBower).StructureBOW(lib)
+						bw = b.(bow.StructureBower).StructureBow(lib)
 					} else if fragbag.IsSequence(lib) {
 						lib := lib.(fragbag.SequenceLibrary)
-						bag = b.(bow.SequenceBower).SequenceBOW(lib)
+						bw = b.(bow.SequenceBower).SequenceBow(lib)
 					} else {
 						Fatalf("Unknown fragment library %T", lib)
 					}
-					results <- Bowered{b.Id(), b.Data(), bag}
+					results <- bw
 				}
 			}()
 		}
@@ -126,7 +120,7 @@ func ProcessBowers(
 // BowerErr corresponds to a value that is either a Bower or an error
 // indicating why a Bower value could not be constructed.
 type BowerErr struct {
-	Bower bow.Bower
+	Bower interface{}
 	Err   error
 }
 
@@ -206,7 +200,7 @@ func BowerOpen(fpath string, lib fragbag.Library) <-chan BowerErr {
 						continue
 					}
 
-					b := bow.PDBChainStructure{chains[i]}
+					b := bow.BowerFromChain(chains[i])
 					bowers <- BowerErr{Bower: b}
 				}
 			} else {
@@ -221,7 +215,7 @@ func BowerOpen(fpath string, lib fragbag.Library) <-chan BowerErr {
 							entry.IdCode, chains[i].Ident)
 						continue
 					}
-					bowers <- BowerErr{Bower: bow.Sequence{s}}
+					bowers <- BowerErr{Bower: bow.BowerFromSequence(s)}
 				}
 			}
 		}()
@@ -249,7 +243,7 @@ func BowerOpen(fpath string, lib fragbag.Library) <-chan BowerErr {
 					bowers <- BowerErr{Err: err}
 					return
 				}
-				bowers <- BowerErr{Bower: bow.Sequence{s}}
+				bowers <- BowerErr{Bower: bow.BowerFromSequence(s)}
 			}
 		}()
 		return bowers

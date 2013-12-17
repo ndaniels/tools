@@ -13,5 +13,5 @@ func init() {
 func main() {
 	lib := util.StructureLibrary(util.Arg(0))
 	fmap := util.FmapRead(util.Arg(1))
-	util.BOWWrite(util.CreateFile(util.Arg(2)), fmap.StructureBOW(lib))
+	util.BowWrite(util.CreateFile(util.Arg(2)), fmap.StructureBow(lib))
 }
