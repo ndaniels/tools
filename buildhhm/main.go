@@ -6,7 +6,7 @@ import (
 	"flag"
 
 	"github.com/TuftsBCB/apps/hhsuite"
-	"github.com/TuftsBCB/io/hhm"
+	"github.com/TuftsBCB/io/hmm"
 	"github.com/TuftsBCB/tools/util"
 )
 
@@ -36,6 +36,6 @@ func main() {
 		hhblits, hhmake, util.FlagSeqDB, inFasta)
 	util.Assert(err, "Error building HHM")
 
-	util.Assert(hhm.Write(util.CreateFile(outHHM), HHM),
+	util.Assert(hmm.WriteHHM(util.CreateFile(outHHM), HHM),
 		"Error writing HHM '%s'", outHHM)
 }

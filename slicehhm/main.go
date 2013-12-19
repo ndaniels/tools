@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/TuftsBCB/io/hhm"
+	"github.com/TuftsBCB/io/hmm"
 	"github.com/TuftsBCB/tools/util"
 )
 
@@ -19,8 +19,8 @@ func main() {
 
 	fhhm := util.OpenFile(hhmFile)
 
-	qhhm, err := hhm.Read(fhhm)
+	qhhm, err := hmm.ReadHHM(fhhm)
 	util.Assert(err)
 
-	util.Assert(hhm.Write(os.Stdout, qhhm.Slice(start, end)))
+	util.Assert(hmm.WriteHHM(os.Stdout, qhhm.Slice(start, end)))
 }
