@@ -96,10 +96,19 @@ func PDBOpen(fpath string) (*pdb.Entry, []*pdb.Chain, error) {
 			base = base[0:4]
 		}
 
-		if dir == "." && len(base) == 4 {
-			return PDBPath(base), idents
-		} else if dir == "." && len(base) == 7 && base[0] == 'd' {
-			return ScopPath(base), idents
+		if dir == "." {
+			switch len(base) {
+			case 4:
+				return PDBPath(base), idents
+			case 6:
+				return CathPath(base), idents
+			case 7:
+				if base[0] == 'd' {
+					return ScopPath(base), idents
+				} else {
+					return CathPath(base), idents
+				}
+			}
 		}
 		return path.Join(dir, base), idents
 	}
@@ -178,6 +187,38 @@ func ScopPath(pid string) string {
 	group := pid[2:4]
 	basename := fmt.Sprintf("%s.ent", pid)
 	return path.Join(pdbPath, group, basename)
+}
+
+// CathPath takes a CATH identifier (e.g., "2h5xB03") and returns
+// the full path to the PDB file on the file system.
+//
+// The CATH_PDB_PATH environment variable must be set.
+func CathPath(pid string) string {
+	if len(pid) < 6 || len(pid) > 7 {
+		Fatalf("CATH domain ids must contain 6 or 7 characters, but '%s' "+
+			"has %d.", pid, len(pid))
+	}
+	pdbPath := os.Getenv("CATH_PDB_PATH")
+	if len(pdbPath) == 0 || !IsDir(pdbPath) {
+		Fatalf("The CATH_PDB_PATH environment variable must be set to open " +
+			"PDB files of CATH domain by just their ID.\n" +
+			"CATH_PDB_PATH should be set to the directory containing a full " +
+			"copy of the CATH PDB database as PDB formatted files.")
+	}
+
+	// We have to deal with some old data sets using 6-character domain IDs.
+	// This is a nightmare because there doesn't appear to be an easy
+	// deterministic mapping.
+	if len(pid) == 6 {
+		if pid[4] == '0' {
+			pid_ := fmt.Sprintf("%sA%s", pid[0:4], pid[4:6])
+			if p := path.Join(pdbPath, pid_); Exists(p) {
+				return p
+			}
+		}
+		pid = fmt.Sprintf("%s0%c", pid[0:5], pid[5])
+	}
+	return path.Join(pdbPath, pid)
 }
 
 func PDBReadId(pid string) (*pdb.Entry, *pdb.Chain) {
@@ -281,12 +322,8 @@ func IsFmap(fpath string) bool {
 func IsPDB(fpath string) bool {
 	pieces := strings.Split(path.Base(fpath), ":")
 	base := pieces[0]
-	if path.Dir(fpath) == "." {
-		if len(base) == 4 ||
-			len(base) == 5 ||
-			(len(base) == 7 && base[0] == 'd') {
-			return true
-		}
+	if path.Dir(fpath) == "." && len(base) >= 4 && len(base) <= 7 {
+		return true
 	}
 
 	suffix := func(ext string) bool {
