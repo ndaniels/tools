@@ -4,7 +4,9 @@ import (
 	"encoding/csv"
 	"encoding/gob"
 	"flag"
-	"os"
+	"runtime/pprof"
+
+	"github.com/BurntSushi/intern"
 
 	"github.com/TuftsBCB/io/newick"
 	"github.com/TuftsBCB/tools/util"
@@ -35,15 +37,21 @@ func init() {
 }
 
 func main() {
+	if len(util.FlagCpuProf) > 0 {
+		f := util.CreateFile(util.FlagCpuProf)
+		pprof.StartCPUProfile(f)
+		defer f.Close()
+		defer pprof.StopCPUProfile()
+	}
 	if len(flagGobIt) > 0 {
 		astralDir := util.Arg(0)
 		dists := readAlignmentDists(astralDir)
 		enc := gob.NewEncoder(util.CreateFile(flagGobIt))
 		util.Assert(enc.Encode(dists), "Could not GOB encode distances")
-		os.Exit(0)
+		return
 	}
 
-	var dists *distPairs
+	var dists *intern.Table
 	if util.IsDir(util.Arg(0)) {
 		dists = readAlignmentDists(util.Arg(0))
 	} else {
@@ -68,7 +76,7 @@ type clusters [][]string
 
 func treeClusters(
 	threshold float64,
-	dists *distPairs,
+	dists *intern.Table,
 	tree *newick.Tree,
 ) clusters {
 	if len(tree.Children) == 0 {
@@ -84,11 +92,12 @@ func treeClusters(
 		if len(node1.Label) == 0 {
 			return true
 		}
+		a1 := dists.Atom(node1.Label)
 		return forNode(tree, func(node2 *newick.Tree) bool {
 			if len(node2.Label) == 0 {
 				return true
 			}
-			return dists.dist(node1.Label, node2.Label) <= threshold
+			return dists.Get(a1, dists.Atom(node2.Label)) <= threshold
 		})
 	})
 	if within {

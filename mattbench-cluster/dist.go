@@ -9,67 +9,18 @@ import (
 	"sync"
 	"time"
 
+	"github.com/BurntSushi/intern"
+
 	"github.com/TuftsBCB/tools/util"
 )
-
-type distPairs struct {
-	Dists   [][]float64
-	Atoms   map[string]uint16
-	Current uint16
-}
 
 type pair struct {
 	key  [2]string
 	dist float64
 }
 
-func (dp *distPairs) addPair(p pair) {
-	k1, k2 := dp.intern(p.key[0]), dp.intern(p.key[1])
-	if dp.Dists == nil {
-		dp.Dists = make([][]float64, 1000)
-	}
-	if k1 >= uint16(len(dp.Dists)) {
-		newLength := uint16(2 * len(dp.Dists))
-		if k1 >= newLength {
-			newLength = k1 + 1
-		}
-		n := make([][]float64, newLength)
-		copy(n, dp.Dists)
-		dp.Dists = n
-	}
-	if dp.Dists[k1] == nil {
-		dp.Dists[k1] = make([]float64, 1000)
-	}
-	if k2 >= uint16(len(dp.Dists[k1])) {
-		newLength := uint16(2 * len(dp.Dists[k1]))
-		if k2 >= newLength {
-			newLength = k2 + 1
-		}
-		n := make([]float64, newLength)
-		copy(n, dp.Dists[k1])
-		dp.Dists[k1] = n
-	}
-	dp.Dists[k1][k2] = p.dist
-}
-
-func (dp *distPairs) intern(s string) uint16 {
-	if i, ok := dp.Atoms[s]; ok {
-		return i
-	}
-	dp.Atoms[s] = dp.Current
-	dp.Current++
-	if dp.Current == 0 {
-		panic("string interning overflow")
-	}
-	return dp.Current - 1
-}
-
-func readAlignmentDists(dir string) *distPairs {
-	dists := &distPairs{
-		Dists:   make([][]float64, 11000),
-		Atoms:   make(map[string]uint16, 11000),
-		Current: 0,
-	}
+func readAlignmentDists(dir string) *intern.Table {
+	dists := intern.NewTable(11000)
 	threads := util.FlagCpu
 	addDists := make(chan []pair)
 	alignFile := make(chan string)
@@ -78,7 +29,8 @@ func readAlignmentDists(dir string) *distPairs {
 	go func() {
 		for fileDists := range addDists {
 			for _, pair := range fileDists {
-				dists.addPair(pair)
+				a1, a2 := dists.Atom(pair.key[0]), dists.Atom(pair.key[1])
+				dists.Set(a1, a2, pair.dist)
 			}
 		}
 		done <- struct{}{}
@@ -127,34 +79,6 @@ func readAlignmentDists(dir string) *distPairs {
 	close(addDists)
 	<-done
 	return dists
-}
-
-func (dp *distPairs) dist(p1, p2 string) float64 {
-	if p1 == p2 {
-		return 0
-	}
-
-	var k1, k2 uint16
-	var ok bool
-	if p2 < p1 {
-		p1, p2 = p2, p1
-	}
-
-	k1, ok = dp.Atoms[p1]
-	if !ok {
-		return -1
-		// util.Fatalf("Could not find distance for pair (%s, %s).", p1, p2)
-	}
-
-	k2, ok = dp.Atoms[p2]
-	if !ok {
-		return -1
-		// util.Fatalf("Could not find distance for pair (%s, %s).", p1, p2)
-	}
-	if k1 >= uint16(len(dp.Dists)) || k2 >= uint16(len(dp.Dists[k1])) {
-		return -1
-	}
-	return dp.Dists[k1][k2]
 }
 
 func recordToDist(record []string) pair {
