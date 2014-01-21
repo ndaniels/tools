@@ -74,7 +74,7 @@ func PDBOpenMust(fpath string) (*pdb.Entry, []*pdb.Chain) {
 }
 
 func PDBOpen(fpath string) (*pdb.Entry, []*pdb.Chain, error) {
-	pdbNameParse := func(fpath string) (string, []byte) {
+	pdbNameParse := func(fpath string) (string, []byte, string) {
 		dir, base := path.Dir(fpath), path.Base(fpath)
 		pieces := strings.Split(base, ":")
 
@@ -99,25 +99,32 @@ func PDBOpen(fpath string) (*pdb.Entry, []*pdb.Chain, error) {
 		if dir == "." {
 			switch len(base) {
 			case 4:
-				return PDBPath(base), idents
+				return PDBPath(base), idents, base
 			case 6:
-				return CathPath(base), idents
+				return CathPath(base), idents, base
 			case 7:
 				if base[0] == 'd' {
-					return ScopPath(base), idents
+					return ScopPath(base), idents, base
 				} else {
-					return CathPath(base), idents
+					return CathPath(base), idents, base
 				}
 			}
 		}
-		return path.Join(dir, base), idents
+		return path.Join(dir, base), idents, ""
 	}
 
-	fp, idents := pdbNameParse(fpath)
+	fp, idents, idcode := pdbNameParse(fpath)
 	entry, err := pdb.ReadPDB(fp)
 	if err != nil {
 		err = fmt.Errorf("Error reading '%s': %s", fp, err)
 		return nil, nil, err
+	}
+	if len(idcode) > 0 {
+		if len(idcode) == 6 || (len(idcode) == 7 && idcode[0] != 'd') {
+			entry.Cath = idcode
+		} else if len(idcode) == 7 && idcode[0] == 'd' {
+			entry.Scop = idcode
+		}
 	}
 
 	var chains []*pdb.Chain
