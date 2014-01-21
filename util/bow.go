@@ -23,9 +23,13 @@ import (
 //
 // If `hideProgress` is true, then a progress bar will not be emitted to
 // stderr.
+//
+// If `models` is true, then every model in a PDB bower file will have its
+// BOW computed. Otherwise, the first model from each chain will be used.
 func ProcessBowers(
 	fpaths []string,
 	lib fragbag.Library,
+	models bool,
 	n int,
 	hideProgress bool,
 ) <-chan bow.Bowed {
@@ -87,7 +91,7 @@ func ProcessBowers(
 
 				for fpath := range files {
 					var err error
-					for b := range BowerOpen(fpath, lib) {
+					for b := range BowerOpen(fpath, lib, models) {
 						if b.Err != nil {
 							err = b.Err
 						} else {
@@ -175,7 +179,7 @@ type BowerErr struct {
 // Alternatively, `fpath` may be the name of a SCOP domain, and its
 // corresponding PDB file will be inferred from the value of the
 // `SCOP_PDB_PATH` environment variable.
-func BowerOpen(fpath string, lib fragbag.Library) <-chan BowerErr {
+func BowerOpen(fpath string, lib fragbag.Library, models bool) <-chan BowerErr {
 	if lib == nil {
 		Fatalf("Files can only be converted to Fragbag frequency vectors " +
 			"if a fragment library is specified.")
@@ -200,8 +204,15 @@ func BowerOpen(fpath string, lib fragbag.Library) <-chan BowerErr {
 						continue
 					}
 
-					b := bow.BowerFromChain(chains[i])
-					bowers <- BowerErr{Bower: b}
+					if !models {
+						b := bow.BowerFromChain(chains[i])
+						bowers <- BowerErr{Bower: b}
+					} else {
+						for _, m := range chains[i].Models {
+							b := bow.BowerFromModel(m)
+							bowers <- BowerErr{Bower: b}
+						}
+					}
 				}
 			} else {
 				for i := range chains {
