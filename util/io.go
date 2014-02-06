@@ -9,18 +9,12 @@ import (
 )
 
 func ReadLines(r io.Reader) []string {
-	buf := bufio.NewReader(r)
+	scanner := bufio.NewScanner(r)
 	lines := make([]string, 0)
-	for {
-		line, err := buf.ReadString('\n')
-		if err != nil && err != io.EOF {
-			Fatalf("Could not read line: %s.", err)
-		}
-		lines = append(lines, strings.TrimSpace(line))
-		if err == io.EOF {
-			break
-		}
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
 	}
+	Assert(scanner.Err())
 	return lines
 }
 
