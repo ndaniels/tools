@@ -231,7 +231,7 @@ func BowerOpen(fpath string, lib fragbag.Library, models bool) <-chan BowerErr {
 			}
 		}()
 		return bowers
-	case IsFasta(fpath):
+	case IsFasta(fpath) && !fragbag.IsStructure(lib):
 		go func() {
 			defer close(bowers)
 
