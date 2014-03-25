@@ -11,6 +11,8 @@ import (
 	"github.com/TuftsBCB/fragbag"
 	"github.com/TuftsBCB/fragbag/bow"
 	"github.com/TuftsBCB/io/fasta"
+	"github.com/TuftsBCB/io/pdb"
+	"github.com/TuftsBCB/seq"
 )
 
 // ProcessBowers is a convenient wrapper around BowerOpen that processes each
@@ -222,9 +224,12 @@ func BowerOpen(fpath string, lib fragbag.Library, models bool) <-chan BowerErr {
 
 					s := chains[i].AsSequence()
 					if s.Len() == 0 {
-						Warnf("Chain '%s:%c' does not have an amino sequence.",
-							entry.IdCode, chains[i].Ident)
-						continue
+						s = aminoFromStructure(chains[i])
+						if s.Len() == 0 {
+							Warnf("Chain '%s:%c' has no amino sequence.",
+								entry.IdCode, chains[i].Ident)
+							continue
+						}
 					}
 					bowers <- BowerErr{Bower: bow.BowerFromSequence(s)}
 				}
@@ -319,4 +324,27 @@ func fastaOpen(fpath string) (io.Reader, *os.File, error) {
 		r = fp
 	}
 	return r, fp, nil
+}
+
+func aminoFromStructure(chain *pdb.Chain) seq.Sequence {
+	var name string
+	if len(chain.Entry.Cath) > 0 {
+		name = chain.Entry.Cath
+	} else if len(chain.Entry.Scop) > 0 {
+		name = chain.Entry.Scop
+	} else {
+		name = fmt.Sprintf("%s%c", chain.Entry.IdCode, chain.Ident)
+	}
+	s := seq.Sequence{
+		Name:     name,
+		Residues: make([]seq.Residue, 0, 50),
+	}
+	lasti := 0
+	for _, r := range chain.Models[0].Residues {
+		if lasti != r.SequenceNum {
+			s.Residues = append(s.Residues, r.Name)
+			lasti = r.SequenceNum
+		}
+	}
+	return s
 }
