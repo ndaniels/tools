@@ -10,9 +10,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/TuftsBCB/fragbag"
-	"github.com/TuftsBCB/fragbag/bow"
-	"github.com/TuftsBCB/fragbag/bowdb"
+	"github.com/ndaniels/esfragbag"
+	"github.com/ndaniels/esfragbag/bow"
+	"github.com/ndaniels/esfragbag/bowdb"
 	"github.com/TuftsBCB/hhfrag"
 	"github.com/TuftsBCB/io/msa"
 	"github.com/TuftsBCB/io/pdb"

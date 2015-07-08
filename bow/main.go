@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	"github.com/TuftsBCB/fragbag/bow"
-	"github.com/TuftsBCB/tools/util"
+	"github.com/ndaniels/esfragbag/bow"
+	"github.com/ndaniels/tools/util"
 )
 
 func init() {

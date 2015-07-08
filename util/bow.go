@@ -8,8 +8,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/TuftsBCB/fragbag"
-	"github.com/TuftsBCB/fragbag/bow"
+	"github.com/ndaniels/esfragbag"
+	"github.com/ndaniels/esfragbag/bow"
 	"github.com/TuftsBCB/io/fasta"
 	"github.com/TuftsBCB/io/pdb"
 	"github.com/TuftsBCB/seq"
