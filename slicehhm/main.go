@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/TuftsBCB/io/hmm"
-	"github.com/TuftsBCB/tools/util"
+	"github.com/ndaniels/tools/util"
 )
 
 func init() {

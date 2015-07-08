@@ -8,14 +8,14 @@ may use concurrency in an attempt to decrease execution time.
 
 ## Documentation for each command
 
-http://godoc.org/github.com/TuftsBCB/tools
+http://godoc.org/github.com/ndaniels/tools
 
 
 ## Installation
 
 Once you have [Go installed](http://golang.org/doc/install), just run
 
-    go get github.com/TuftsBCB/tools/...
+    go get github.com/ndaniels/tools/...
 
 to install the package.
 

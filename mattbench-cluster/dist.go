@@ -11,7 +11,7 @@ import (
 
 	"github.com/BurntSushi/intern"
 
-	"github.com/TuftsBCB/tools/util"
+	"github.com/ndaniels/tools/util"
 )
 
 type pair struct {

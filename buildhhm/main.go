@@ -7,7 +7,7 @@ import (
 
 	"github.com/TuftsBCB/apps/hhsuite"
 	"github.com/TuftsBCB/io/hmm"
-	"github.com/TuftsBCB/tools/util"
+	"github.com/ndaniels/tools/util"
 )
 
 var (

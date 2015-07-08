@@ -12,7 +12,7 @@ import (
 	"github.com/TuftsBCB/io/fasta"
 	"github.com/TuftsBCB/io/pdbx"
 	"github.com/TuftsBCB/seq"
-	"github.com/TuftsBCB/tools/util"
+	"github.com/ndaniels/tools/util"
 )
 
 var (

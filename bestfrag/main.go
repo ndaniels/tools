@@ -7,7 +7,7 @@ import (
 	"github.com/ndaniels/esfragbag"
 	"github.com/TuftsBCB/io/pdb"
 	"github.com/TuftsBCB/structure"
-	"github.com/TuftsBCB/tools/util"
+	"github.com/ndaniels/tools/util"
 )
 
 var lib fragbag.StructureLibrary

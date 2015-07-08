@@ -7,7 +7,7 @@ import (
 
 	"github.com/TuftsBCB/io/msa"
 	"github.com/TuftsBCB/seq"
-	"github.com/TuftsBCB/tools/util"
+	"github.com/ndaniels/tools/util"
 )
 
 type (

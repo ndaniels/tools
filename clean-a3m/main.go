@@ -8,7 +8,7 @@ package main
 
 import (
 	"github.com/TuftsBCB/io/fasta"
-	"github.com/TuftsBCB/tools/util"
+	"github.com/ndaniels/tools/util"
 )
 
 func init() {

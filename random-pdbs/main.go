@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TuftsBCB/tools/util"
+	"github.com/ndaniels/tools/util"
 )
 
 var (
